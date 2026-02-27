@@ -42,6 +42,17 @@ const HospitalAnalytics = lazy(() => import('./pages/hospital/pages/Analytics'))
 const HospitalRecords = lazy(() => import('./pages/hospital/pages/PatientRecords'));
 const HospitalBeds = lazy(() => import('./pages/hospital/pages/BedManagement'));
 const HospitalSettings = lazy(() => import('./pages/hospital/pages/Settings'));
+
+// Doctor Dashboard Imports (Lazy)
+const DoctorPortalLayout = lazy(() => import('./pages/doctor/components/Layout'));
+const DoctorNewDashboard = lazy(() => import('./pages/doctor/DoctorDashboard'));
+const DoctorSchedule = lazy(() => import('./pages/doctor/MySchedule'));
+const DoctorLive = lazy(() => import('./pages/doctor/LiveConsultation'));
+const DoctorHistory = lazy(() => import('./pages/doctor/PatientHistory'));
+const DoctorPrescriptions = lazy(() => import('./pages/doctor/PrescriptionManager'));
+const DoctorSmartScript = lazy(() => import('./pages/doctor/SmartScript'));
+const DoctorNotifications = lazy(() => import('./pages/doctor/Notifications'));
+const DoctorNotepad = lazy(() => import('./pages/doctor/SharedNotepad'));
 import { AuthProvider as HospitalAuthProvider } from './pages/hospital/context/AuthContext';
 import { AppointmentProvider as HospitalAppointmentProvider } from './pages/hospital/context/AppointmentContext';
 import { useAuth } from './context/AuthContext';
@@ -120,7 +131,6 @@ function App() {
 
           {/* Phase 10 Routes */}
           <Route path="dashboard/patient" element={<ProtectedRoute allowedRoles={['patient']}><PatientDashboard /></ProtectedRoute>} />
-          <Route path="dashboard/doctor" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
           <Route path="admin/tracking" element={<AdminUserTracking />} />
           <Route path="medicine-search" element={<MedicineSearch />} />
         </Route>
@@ -167,8 +177,48 @@ function App() {
           <Route path="settings" element={<HospitalSettings />} />
         </Route>
 
+        {/* New Doctor Dashboard Routes (Scoped) */}
+        <Route path="/dashboard/doctor" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <SafeErrorBoundary>
+              <Suspense fallback={
+                <div style={{
+                  minHeight: '100vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#0F172A',
+                  color: 'white',
+                  fontFamily: 'Outfit, sans-serif'
+                }}>
+                  <div className="animate-pulse" style={{ marginBottom: '20px', color: '#3B82F6' }}>
+                    <Droplets size={48} />
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '1px' }}>INITIALIZING DOCTOR PORTAL</div>
+                  <div style={{ fontSize: '12px', opacity: 0.5, marginTop: '8px', textTransform: 'uppercase' }}>Synchronizing Clinical Data...</div>
+                </div>
+              }>
+                <DoctorPortalLayout />
+              </Suspense>
+            </SafeErrorBoundary>
+          </ProtectedRoute>
+        }>
+          <Route index element={<DoctorNewDashboard />} />
+          <Route path="schedule" element={<DoctorSchedule />} />
+          <Route path="live" element={<DoctorLive />} />
+          <Route path="history" element={<DoctorHistory />} />
+          <Route path="prescriptions" element={<DoctorPrescriptions />} />
+          <Route path="smart-script" element={<DoctorSmartScript />} />
+          <Route path="notifications" element={<DoctorNotifications />} />
+          <Route path="notepad" element={<DoctorNotepad />} />
+        </Route>
+
         {/* Full-width Desktop Routes (Bypassing mobile container) */}
         <Route path="dashboard/pharmacy" element={<ProtectedRoute allowedRoles={['medical_store']}><MedicalStoreDashboard /></ProtectedRoute>} />
+
+        {/* Catch-all route to prevent blank screens on invalid URLs */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

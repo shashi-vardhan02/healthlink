@@ -82,14 +82,10 @@ export const AuthProvider = ({ children }) => {
                     setUser(null);
                 } else {
                     const parsed = JSON.parse(storedMockUser);
-                    // If it's a firebase-based session (has uid) but Firebase says no user, clear it
-                    // 'demo-' prefix is used for master login / simulated users
-                    if (parsed.uid && !parsed.uid.startsWith('demo-')) {
-                        setUser(null);
-                        localStorage.removeItem('varogra_user');
-                    } else {
-                        setUser(parsed);
-                    }
+                    // FIXED: Do not force logout if Firebase returns null but we have a stored session.
+                    // This prevents redirects due to temporary sync issues or multi-tab persistence conflicts.
+                    console.log("vArogra: Firebase returned null, but found stored session. Retaining user:", parsed.uid || parsed.id);
+                    setUser(parsed);
                 }
             }
             setLoading(false);
@@ -277,7 +273,7 @@ export const AuthProvider = ({ children }) => {
     const loginDoctor = async (code, password) => {
         // Master Login Bypass
         if (code === '123' && password === 'dsa') {
-            return { success: true, doctor: { name: 'Admin Doctor', code: 'MASTER-D', role: 'doctor', id: 'master-doc', status: 'approved' } };
+            return { success: true, doctor: { name: 'Admin Doctor', code: 'MASTER-D', role: 'doctor', uid: 'demo-master-doc', status: 'approved' } };
         }
 
         const doc = allDoctors.find(d => d.code === code && d.password === password);
